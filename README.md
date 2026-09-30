@@ -42,7 +42,8 @@ containing a key that is registered on GitHub. The script loads it into a
 temporary ssh-agent. The key is never written to disk, and it is gone when the
 script exits.
 
-To use another item name or the EU server, edit `BW_SSH_ITEM` or `BW_SERVER`
+The account is on the EU server (`vault.bitwarden.eu`). To use another item
+name or server, edit `BW_SSH_ITEM` or `BW_SERVER`
 at the top of `bootstrap.sh`.
 
 ## Dry run
@@ -50,7 +51,7 @@ at the top of `bootstrap.sh`.
 To see what it would change without changing anything:
 
 ```sh
-wget -qO- https://raw.githubusercontent.com/johsacher/bootstrap/main/bootstrap.sh | bash -s -- --check --diff
+wget -O- https://raw.githubusercontent.com/johsacher/bootstrap/main/bootstrap.sh | bash -s -- --check --diff
 ```
 
 Any options after `--` are passed to `ansible-playbook`.

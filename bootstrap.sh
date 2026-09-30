@@ -2,8 +2,8 @@
 # Bootstrap jo's Ubuntu machine. Public on purpose; it contains no secrets.
 # On the new machine, as your normal user, inside the desktop session:
 #
-#   wget -qO- https://raw.githubusercontent.com/johsacher/bootstrap/main/bootstrap.sh | bash
-#   wget -qO- .../bootstrap.sh | bash -s -- --check      # options go to ansible-playbook
+#   wget -O- https://raw.githubusercontent.com/johsacher/bootstrap/main/bootstrap.sh | bash
+#   wget -O- .../bootstrap.sh | bash -s -- --check      # options go to ansible-playbook
 #   (wget, not curl: a fresh Ubuntu desktop has wget but not always curl)
 #   (or download it first, read it, then: bash bootstrap.sh)
 #
@@ -17,7 +17,7 @@
 REPO="git@github.com:johsacher/ansible-machines.git"  # private playbook repo
 DEST="${ANSIBLE_MACHINES_DIR:-$HOME/ansible-machines}"
 BW_SSH_ITEM="GitHub SSH key"   # Bitwarden SSH key item that GitHub knows
-BW_SERVER=""                   # empty for bitwarden.com; "https://vault.bitwarden.eu" for EU
+BW_SERVER="https://vault.bitwarden.eu"   # EU account; empty for bitwarden.com
 # -------------------------------------------------------------------------
 
 # GitHub's published ed25519 host key, so the first clone doesn't stop to ask.
