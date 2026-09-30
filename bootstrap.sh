@@ -7,8 +7,10 @@
 #   (wget, not curl: a fresh Ubuntu desktop has wget but not always curl)
 #   (or download it first, read it, then: bash bootstrap.sh)
 #
-# Asks for your sudo password, then your Bitwarden login (email, master password,
-# 2FA code). Everything after that runs unattended.
+# Asks for your sudo password, then Bitwarden: the first time the full login
+# (email, master password, 2FA code), on later runs only the master password.
+# Everything after that runs unattended. The machine stays logged in to
+# Bitwarden, locked. On a machine that isn't yours, run `bw logout` afterwards.
 #
 # Only gets the private repo onto the machine, then hands over to its bin/setup.
 # Everything that changes lives there, not here.
@@ -25,11 +27,9 @@ GH_HOSTKEY='github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqK
 AGENT_STARTED=""
 
 cleanup() {
-  # Runs on every exit, success or failure: close the vault and drop the key.
-  if [ -n "${BITWARDENCLI_APPDATA_DIR:-}" ]; then
-    bw logout >/dev/null 2>&1 || true
-    rm -rf "$BITWARDENCLI_APPDATA_DIR"
-  fi
+  # Runs on every exit, success or failure: lock the vault and drop the key.
+  # Lock, not logout: the login stays, so later runs need no 2FA.
+  if command -v bw >/dev/null; then bw lock >/dev/null 2>&1 || true; fi
   if [ -n "$AGENT_STARTED" ]; then ssh-agent -k >/dev/null 2>&1 || true; fi
 }
 
@@ -48,19 +48,29 @@ main() {
   printf '%s\n' "$BECOME_PASS" | sudo -S -p '' -v 2>/dev/null ||
     die "wrong sudo password"
 
-  # 2. Bitwarden CLI and login: prompts for email, master password and 2FA code.
+  # 2. Bitwarden: log in the first time, unlock on later runs.
   command -v bw >/dev/null || { say "Installing the Bitwarden CLI"; sudo snap install bw; }
-  # A fresh bw data dir for every run, deleted on exit. bw's own state can't
-  # block it: after `bw logout` that state keeps the account and forgets the
-  # server, and then refuses `bw config server` ("Logout required before
-  # server config update"). It also leaves your own bw login alone.
-  # Under ~/snap/bw/common because the snap may write nowhere else.
-  mkdir -p "$HOME/snap/bw/common"
-  BITWARDENCLI_APPDATA_DIR="$(mktemp -d "$HOME/snap/bw/common/bootstrap.XXXXXX")"
-  export BITWARDENCLI_APPDATA_DIR
-  if [ -n "$BW_SERVER" ]; then bw config server "$BW_SERVER" >/dev/null 2>&1; fi
-  say "Bitwarden login"
-  BW_SESSION="$(bw login --raw)"
+  read -r bw_status bw_url < <(bw status | python3 -c \
+    'import json, sys; d = json.load(sys.stdin); print(d["status"], d.get("serverUrl") or "-")')
+  if [ "$bw_status" = unauthenticated ]; then
+    if [ -n "$BW_SERVER" ] && [ "${bw_url%/}" != "${BW_SERVER%/}" ]; then
+      if ! bw config server "$BW_SERVER" >/dev/null 2>&1; then
+        # After a `bw logout`, bw keeps the account but forgets the server,
+        # then refuses the change ("Logout required before server config
+        # update"). Nothing is logged in, so move that stale state aside.
+        for f in "$HOME/snap/bw/current/.config/Bitwarden CLI/data.json" \
+                 "$HOME/.config/Bitwarden CLI/data.json"; do
+          if [ -f "$f" ]; then mv "$f" "$f.stale"; fi
+        done
+        bw config server "$BW_SERVER" >/dev/null
+      fi
+    fi
+    say "Bitwarden login (first time on this machine)"
+    BW_SESSION="$(bw login --raw)"
+  else
+    say "Bitwarden unlock"
+    BW_SESSION="$(bw unlock --raw)"
+  fi
   export BW_SESSION    # the playbook's community.general.bitwarden lookups use this
 
   # 3. SSH key: straight from the vault into a private agent, never onto disk.

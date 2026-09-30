@@ -17,7 +17,8 @@ wget -O- https://raw.githubusercontent.com/johsacher/bootstrap/main/bootstrap.sh
 
 - starts with minimal interaction:
   - asking **sudo password**
-  - asking **Bitwarden login**: email, master password, 2FA code
+  - asking **Bitwarden login**: email, master password, 2FA code (first time;
+    later runs only the master password)
 - after that: GRAB A COFFEE AND COME BACK!
 
 The repo ends up in `~/ansible-machines`.
@@ -61,13 +62,14 @@ Any options after `--` are passed to `ansible-playbook`.
 1. Checks that you're on Ubuntu and not running it as root.
 2. Asks for the sudo password once and checks it. The password is reused for
    apt and for Ansible.
-3. Installs the Bitwarden CLI (via snap), then logs in to Bitwarden, every
-   run, in a fresh data directory of its own. An existing `bw` login on the
-   machine is left alone.
+3. Installs the Bitwarden CLI (via snap). The first time it logs in to
+   Bitwarden; on later runs it only unlocks, asking for the master password
+   but no 2FA code.
 4. Loads the SSH key into a temporary agent, and pins GitHub's host key so the
    first clone doesn't stop to ask.
 5. Installs `git` and `ansible`, then clones `ansible-machines`, or updates it
    if it's already there.
 6. Hands over to `ansible-machines/bin/setup`, which runs the playbook.
-7. On exit, whether it succeeded or failed: logs out of Bitwarden, deletes
-   that data directory, and stops the agent.
+7. On exit, whether it succeeded or failed: locks Bitwarden again and stops
+   the agent. The machine stays logged in to Bitwarden, so the next run needs
+   no 2FA. On a machine that isn't yours, run `bw logout` afterwards.
