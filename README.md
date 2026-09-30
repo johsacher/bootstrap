@@ -12,7 +12,7 @@ stays in Bitwarden and in the private repo.
 just run:
 
 ```sh
-wget -qO- https://raw.githubusercontent.com/johsacher/bootstrap/main/bootstrap.sh | bash
+wget -O- https://raw.githubusercontent.com/johsacher/bootstrap/main/bootstrap.sh | bash
 ```
 
 - starts with minimal interaction:
