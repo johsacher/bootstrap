@@ -1,4 +1,4 @@
-# ~bootstrap~
+# `bootstrap`
 
 One command that turns a freshly installed Ubuntu into jo's working machine.
 It fetches the GitHub SSH key from Bitwarden, clones the private
