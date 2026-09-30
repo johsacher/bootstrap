@@ -2,8 +2,9 @@
 # Bootstrap jo's Ubuntu machine. Public on purpose; it contains no secrets.
 # On the new machine, as your normal user, inside the desktop session:
 #
-#   curl -fsSL https://raw.githubusercontent.com/johsacher/bootstrap/main/bootstrap.sh | bash
-#   curl -fsSL .../bootstrap.sh | bash -s -- --check      # options go to ansible-playbook
+#   wget -qO- https://raw.githubusercontent.com/johsacher/bootstrap/main/bootstrap.sh | bash
+#   wget -qO- .../bootstrap.sh | bash -s -- --check      # options go to ansible-playbook
+#   (wget, not curl: a fresh Ubuntu desktop has wget but not always curl)
 #   (or download it first, read it, then: bash bootstrap.sh)
 #
 # Asks for your sudo password, then your Bitwarden login (email, master password,
@@ -92,6 +93,6 @@ main() {
 
 # Everything above only defines things; nothing runs until this last line, so a
 # download that stopped halfway can't run half a script. </dev/tty because with
-# `curl | bash` the keyboard input is the script itself; prompts would read the
+# `wget ... | bash` the keyboard input is the script itself; prompts would read the
 # script's own text instead of your typing.
 main "$@" </dev/tty
