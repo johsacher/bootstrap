@@ -52,7 +52,13 @@ main() {
   command -v bw >/dev/null || { say "Installing the Bitwarden CLI"; sudo snap install bw; }
   bw_status="$(bw status | python3 -c 'import json, sys; print(json.load(sys.stdin)["status"])')"
   if [ "$bw_status" = unauthenticated ]; then
-    if [ -n "$BW_SERVER" ]; then bw config server "$BW_SERVER" >/dev/null; fi
+    # Only when it differs: after a logout, bw can still refuse the change
+    # ("Logout required before server config update") until logged out again.
+    bw_current="$(bw config server 2>/dev/null || true)"
+    if [ -n "$BW_SERVER" ] && [ "${bw_current%/}" != "${BW_SERVER%/}" ]; then
+      bw logout >/dev/null 2>&1 || true
+      bw config server "$BW_SERVER" >/dev/null
+    fi
     say "Bitwarden login"
     BW_SESSION="$(bw login --raw)"
     BW_LOGGED_IN=1
