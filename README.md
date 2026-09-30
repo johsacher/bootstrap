@@ -1,4 +1,4 @@
-# bootstrap
+# ~bootstrap~
 
 One command that turns a freshly installed Ubuntu into jo's working machine.
 It fetches the GitHub SSH key from Bitwarden, clones the private
@@ -8,23 +8,17 @@ runs its playbook.
 This script is public on purpose and contains no secrets. Everything private
 stays in Bitwarden and in the private repo.
 
-## Set up a new machine
+## Simple instruction
+just run:
 
-1. Install Ubuntu 24.04, log in to the desktop, and open a terminal.
-   Run it from the desktop, not over ssh: the keybinding step needs the
-   desktop session.
-2. Run:
+```sh
+wget -qO- https://raw.githubusercontent.com/johsacher/bootstrap/main/bootstrap.sh | bash
+```
 
-   ```sh
-   wget -qO- https://raw.githubusercontent.com/johsacher/bootstrap/main/bootstrap.sh | bash
-   ```
-
-3. Answer the prompts at the start:
-   - your **sudo password**
-   - your **Bitwarden login**: email, master password, 2FA code
-
-   After that it runs unattended. That can take a while.
-4. **Log out and back in**, so the keybindings and shell changes take effect.
+- starts with minimal interaction:
+  - asking **sudo password**
+  - asking **Bitwarden login**: email, master password, 2FA code
+- after that: GRAB A COFFEE AND COME BACK!
 
 The repo ends up in `~/ansible-machines`.
 
